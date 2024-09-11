@@ -1,0 +1,50 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "types:atomicassets": "npx abi2ts atomicassets -t > ./src/interfaces/atomicassets.ts",
+    "database:start": "npx supabase start",
+    "database:stop": "npx supabase stop",
+    "database:types": "npx supabase gen types typescript --local --schema public > ./src/interfaces/database.ts"
+  },
+  "dependencies": {
+    "@editorjs/attaches": "^1.3.0",
+    "@editorjs/checklist": "^1.6.0",
+    "@editorjs/code": "^2.9.0",
+    "@editorjs/delimiter": "^1.4.0",
+    "@editorjs/editorjs": "^2.29.1",
+    "@editorjs/embed": "^2.7.0",
+    "@editorjs/header": "^2.8.1",
+    "@editorjs/image": "^2.9.0",
+    "@editorjs/inline-code": "^1.5.0",
+    "@editorjs/link": "^2.6.2",
+    "@editorjs/list": "^1.9.0",
+    "@editorjs/marker": "^1.4.0",
+    "@editorjs/nested-list": "^1.4.2",
+    "@editorjs/paragraph": "^2.11.3",
+    "@editorjs/quote": "^2.6.0",
+    "@editorjs/raw": "^2.5.0",
+    "@editorjs/simple-image": "^1.6.0",
+    "@editorjs/table": "^2.3.0",
+    "@editorjs/text-variant-tune": "^1.0.1",
+    "@editorjs/underline": "^1.1.0",
+    "@editorjs/warning": "^1.4.0",
+    "@pinata/sdk": "^2.1.0",
+    "@supabase/supabase-js": "^2.45.3",
+    "next": "14.2.3",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-router-dom": "^6.26.1",
+    "tailwindcss": "^3.0.7",
+    "three": "^0.161.0",
+    "vite": "^5.1.4"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.48"
+  }
+}
