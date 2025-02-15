@@ -229,47 +229,19 @@ export default function ProfilePage (params: { params: { username: string } }) {
               try {
               const { default: Header } = await import('@editorjs/header');
               const { default: EditorJs } = await import('@editorjs/editorjs');
-              const { default: RawHTML } = await import('@editorjs/raw');
-              const { default: CheckList } = await import('@editorjs/simple-image');
-              const { default: Embed } = await import('@editorjs/embed');
               const { default: Quote } = await import('@editorjs/quote');
               const { default: Table } = await import('@editorjs/table');
               const { default: NestedList } = await import('@editorjs/nested-list');
-              const { default: TextVariantTune } = await import('@editorjs/text-variant-tune');
-              const { default: Underline } = await import('@editorjs/underline');
               const { default: InlineCode } = await import('@editorjs/inline-code');
               const { default: CodeTool } = await import('@editorjs/code');
-              const { default: Warning } = await import('@editorjs/warning');
-              const { default: Marker } = await import('@editorjs/marker');
-              const { default: AttachesTool } = await import('@editorjs/attaches');
               const { default: Delimiter } = await import('@editorjs/delimiter');
-              const { default: SimpleImage } = await import('@editorjs/simple-image');
-              const { default: Paragraph } = await import('@editorjs/paragraph');
   
               const editor = new EditorJs({
                 holder: 'editorjs',
                 tools: {
                   header: { class: Header, inlineToolbar: true },
                   list: { class: NestedList, inlineToolbar: true },
-                  checklist: {
-                    class: CheckList,
-                    inlineToolbar: true,
-                  },
                   // FIXME: some fix need
-                  rawHtml: RawHTML,
-                  embed: {
-                    class: Embed,
-                    config: {
-                      service: {
-                        youtube: true,
-                        facebook: true,
-                        instagram: true,
-                        twitter: true,
-                        codepen: true,
-                        pinterest: true,
-                      },
-                    },
-                  },
                   image: {
                       class: require('@editorjs/image'),
                       inlineToolbar: true,
@@ -343,10 +315,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
                       captionPlaceholder: "Quote's author",
                     },
                   },
-                  paragraph: {
-                    class: Paragraph,
-                    inlineToolbar: true,
-                  },
                   table: {
                     class: Table,
                     inlineToolbar: true,
@@ -355,28 +323,17 @@ export default function ProfilePage (params: { params: { username: string } }) {
                       cols: 3,
                     },
                   },
-                  textVariant: TextVariantTune,
-                  underline: Underline,
                   inlineCode: {
                     class: InlineCode,
                     shortcut: "CMD+SHIFT+M",
                   },
-                  code: CodeTool,
-                  warning: {
-                    class: Warning,
-                    inlineToolbar: true,
-                    shortcut: "CMD+SHIFT+W",
-                    config: {
-                      titlePlaceholder: "Title",
-                      messagePlaceholder: "Message",
-                    },
-                  },
-                  Marker: {
-                    class: Marker,
+                  code: {
+                    class: CodeTool,
                     shortcut: "CMD+SHIFT+M",
                   },
                   attaches: {
-                    class: AttachesTool,
+                    class: require('@editorjs/image'),
+                    inlineToolbar: true,
                     config: {
                       // FIXME: fix the path
                       endpoint: "/api/uploadImage",
