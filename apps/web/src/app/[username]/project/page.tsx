@@ -144,7 +144,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
           setprojectID(AssetCheck.template?.template_id ? [AssetCheck.template.template_id.toString()] : []);
         } else {
           setAssetsData(undefined); // Set an empty array if no match is found
-          setprojectID(""); // Provide a default empty string or a fallback value
+          setprojectID([]); // Provide a default empty string or a fallback value
         }
 
       } catch (error) {
@@ -566,7 +566,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
       settaskPriority('');
       settaskStatus('');
       settaskPrice('');
-      setprojectID('');
+      setprojectID([]);
     }
   };
 
@@ -665,7 +665,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
       setmessageReward('Reward added successfully!');
       setproductTitle('');
       setproductPrice('');
-      setprojectID('');
+      setprojectID([]);
     }
   };
 
@@ -683,7 +683,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
       setmessageReward('Post added successfully!');
       setproductTitle('');
       setproductPrice('');
-      setprojectID('');
+      setprojectID([]);
     }
   };
 
