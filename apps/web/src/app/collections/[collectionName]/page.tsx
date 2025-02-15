@@ -5,7 +5,7 @@ import { ITemplate } from "atomicassets/build/API/Explorer/Objects";
 import Image from "next/image";
 import fetch from "node-fetch";
 
-const explorer = new ExplorerApi('https://aa-xprnetwork-test.saltant.io', 'atomicassets',{fetch: fetch});
+const explorer = new ExplorerApi('https://aa-xprnetwork-test.saltant.io', 'atomicassets',{fetch:fetch as any});
 
 async function getCollectionDetails(collectionName: string):Promise<ITemplate[]> {
   
