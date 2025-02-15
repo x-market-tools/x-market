@@ -227,19 +227,13 @@ export default function ProfilePage (params: { params: { username: string } }) {
               setLoading(true);
               setDataLoaded(true);
               try {
-              const { default: Header } = await import('@editorjs/header');
               const { default: EditorJs } = await import('@editorjs/editorjs');
-              const { default: Quote } = await import('@editorjs/quote');
-              const { default: Table } = await import('@editorjs/table');
-              const { default: NestedList } = await import('@editorjs/nested-list');
-              const { default: InlineCode } = await import('@editorjs/inline-code');
-              const { default: Delimiter } = await import('@editorjs/delimiter');
   
               const editor = new EditorJs({
                 holder: 'editorjs',
                 tools: {
-                  header: { class: Header, inlineToolbar: true },
-                  list: { class: NestedList, inlineToolbar: true },
+                  header: { class: require('@editorjs/header'), inlineToolbar: true },
+                  list: { class: require('@editorjs/nested-list'), inlineToolbar: true },
                   // FIXME: some fix need
                   image: {
                       class: require('@editorjs/image'),
@@ -306,7 +300,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
                       },
                   },
                   quote: {
-                    class: Quote,
+                    class: require('@editorjs/quote'),
                     inlineToolbar: true,
                     shortcut: "CMD+SHIFT+O",
                     config: {
@@ -315,7 +309,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
                     },
                   },
                   table: {
-                    class: Table,
+                    class: require('@editorjs/table'),
                     inlineToolbar: true,
                     config: {
                       rows: 2,
@@ -323,7 +317,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
                     },
                   },
                   inlineCode: {
-                    class: InlineCode,
+                    class: require('@editorjs/inline-code'),
                     shortcut: "CMD+SHIFT+M",
                   },
                   code: {
@@ -338,7 +332,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
                       endpoint: "/api/uploadImage",
                     },
                   },
-                  delimiter: Delimiter,
+                  delimiter: require('@editorjs/code'),
                 },
                 onChange: () => {
                   // Handle changes here if needed
