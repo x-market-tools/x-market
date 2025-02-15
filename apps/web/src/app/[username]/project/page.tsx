@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
+import { Group, AnimationMixer, AnimationClip } from "three";
 
 type FetchFix = (input?: Request | string, init?: RequestInit) => Promise<Response>;
 const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
