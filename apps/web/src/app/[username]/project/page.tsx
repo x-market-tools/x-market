@@ -141,7 +141,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
 
         if (AssetCheck) {
           setAssetsData(AssetCheck); // Store it as an array
-          setprojectID(AssetCheck.template.template_id.toString());
+          setprojectID(AssetCheck.template?.template_id?.toString() ?? "");
         } else {
           setAssetsData([]); // Set an empty array if no match is found
           setprojectID(""); // Provide a default empty string or a fallback value
