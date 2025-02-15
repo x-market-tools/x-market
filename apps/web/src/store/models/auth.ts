@@ -11,10 +11,10 @@ export interface ProtonProfile {
   userName?: string;
 }
 
-export interface ConnectPayload {
+type ConnectPayload = {
   silent?: boolean;
-  callback?: (xprSession?: LinkSession | null | undefined) => void;
-}
+  callback?: (session: any) => void;
+};
 
 //TODO following will be replaced by prisma user
 
@@ -85,9 +85,10 @@ export function configureAuthModel(config: AuthModelConfiguration): AuthModel {
       });
       actions.setLink(link);
       actions.setSession(session);
-      if (session && payload.callback) {
+      if (session && payload?.callback) { 
         payload.callback(session);
       }
+      
       if (session) actions.fetchProtonProfile(session.auth.actor.toString());
     }),
     
