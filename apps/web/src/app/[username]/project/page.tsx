@@ -9,6 +9,7 @@ import { CreatorFlow } from '@/components/CreatorFlow/CreatorFlow';
 import React, { useMemo, Component, useState, useCallback, useEffect, useRef } from 'react';
 import { apiCoreUseStoreActions, apiCoreUseStoreState } from '@/store/hooks';
 import { createClient } from '@supabase/supabase-js';
+import fetch from 'node-fetch';
 
 // THREE
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -16,9 +17,9 @@ import { OrbitControls, useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
 
 const explorer = new ExplorerApi(
-  process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT as string,
+  process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!,
   'atomicassets',
-  { fetch: globalThis.fetch }
+  { fetch }
 );
 
 // Initialize Supabase client
