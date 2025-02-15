@@ -479,9 +479,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const [projectOwner, setprojectOwner] = useState('');
   const [messageTask, setmessageTask] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     // Insert data into the 'posts' table
     const { data, error } = await supabase
       .from('Tasks')  // Replace with your table name
