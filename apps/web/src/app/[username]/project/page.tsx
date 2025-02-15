@@ -233,7 +233,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
               const { default: Table } = await import('@editorjs/table');
               const { default: NestedList } = await import('@editorjs/nested-list');
               const { default: InlineCode } = await import('@editorjs/inline-code');
-              const { default: CodeTool } = await import('@editorjs/code');
               const { default: Delimiter } = await import('@editorjs/delimiter');
   
               const editor = new EditorJs({
@@ -328,11 +327,11 @@ export default function ProfilePage (params: { params: { username: string } }) {
                     shortcut: "CMD+SHIFT+M",
                   },
                   code: {
-                    class: CodeTool,
+                    class: require('@editorjs/code'),
                     shortcut: "CMD+SHIFT+M",
                   },
                   attaches: {
-                    class: require('@editorjs/image'),
+                    class: require('@editorjs/attaches'),
                     inlineToolbar: true,
                     config: {
                       // FIXME: fix the path
