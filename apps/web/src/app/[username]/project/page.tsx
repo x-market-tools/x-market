@@ -229,7 +229,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
               try {
               const { default: Header } = await import('@editorjs/header');
               const { default: EditorJs } = await import('@editorjs/editorjs');
-              const LinkTool = await import('@editorjs/link').then(m => m.default as any);
               const { default: RawHTML } = await import('@editorjs/raw');
               const { default: CheckList } = await import('@editorjs/simple-image');
               const { default: Embed } = await import('@editorjs/embed');
@@ -257,9 +256,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
                     inlineToolbar: true,
                   },
                   // FIXME: some fix need
-                  linkTool: {
-                    class: LinkTool,
-                  },
                   rawHtml: RawHTML,
                   embed: {
                     class: Embed,
