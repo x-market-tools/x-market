@@ -189,7 +189,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   };
 
   const loadEditorDataFromAPI = async () => {
-    if (!initialized || loading || editorContentLoaded || !AssetsData) return; // ✅ Check if AssetsData is defined
+    if (!initialized || loading || editorContentLoaded || !AssetsData || !editorInstance) return; // ✅ Check if editorInstance is defined
     setLoading(true);
   
     try {
@@ -198,7 +198,12 @@ export default function ProfilePage (params: { params: { username: string } }) {
   
       if (AssetsData.mutable_data?.page_content) { // ✅ Ensure page_content exists
         const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
-        await editorInstance.render(parsedData);
+  
+        if (editorInstance) { // ✅ Check again before calling render
+          await editorInstance.render(parsedData);
+        } else {
+          console.warn("Editor instance is not initialized.");
+        }
       }
   
       setEditorContentLoaded(true);
@@ -209,6 +214,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
       setLoading(false);
     }
   };
+  
   
 
   useEffect(() => {
