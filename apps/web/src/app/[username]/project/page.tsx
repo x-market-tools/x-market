@@ -46,33 +46,45 @@ export default function ProfilePage (params: { params: { username: string } }) {
   };
 
   // 3D LOADER
-  const RotatingModel = ({ url, scale = 1, rotationSpeed = 11.01, pauseDuration = 1000 }) => {
-    const { scene, animations  } = useGLTF(url); // Load model
-    const modelRef4 = useRef();
+  interface RotatingModelProps {
+    url: string;
+    scale?: number;
+    rotationSpeed?: number;
+    pauseDuration?: number;
+  }
+  
+  const RotatingModel: React.FC<RotatingModelProps> = ({
+    url,
+    scale = 1,
+    rotationSpeed = 11.01,
+    pauseDuration = 1000,
+  }) => {
+    const { scene, animations } = useGLTF(url) as {
+      scene: Group;
+      animations: AnimationClip[];
+    };
+  
+    const modelRef4 = useRef<Group>(null);
+    const mixerRef = useRef<AnimationMixer | null>(null); // Typed as AnimationMixer
   
     scene.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = false; // Optional
+      if ((child as THREE.Mesh).isMesh) {
+        (child as THREE.Mesh).castShadow = true;
+        (child as THREE.Mesh).receiveShadow = false;
       }
     });
   
-    const mixerRef = useRef(); // Ref to the AnimationMixer
-  
     useEffect(() => {
-      // Create an AnimationMixer when the component mounts
       if (animations.length) {
         mixerRef.current = new THREE.AnimationMixer(scene);
   
-        // Play all animations in the GLTF model
         animations.forEach((clip) => {
-          const action = mixerRef.current.clipAction(clip);
-          action.play(); // Start the animation
+          const action = mixerRef.current!.clipAction(clip);
+          action.play();
         });
       }
   
       return () => {
-        // Clean up the mixer when the component unmounts
         if (mixerRef.current) {
           mixerRef.current.stopAllAction();
           mixerRef.current = null;
@@ -80,7 +92,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
       };
     }, [animations, scene]);
   
-    // Update the mixer on each frame
     useFrame((_, delta) => {
       if (mixerRef.current) {
         mixerRef.current.update(delta);
@@ -89,12 +100,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   
     return (
       <Center>
-        <primitive
-          ref={modelRef4}
-          object={scene}
-          scale={scale}
-          castShadow // Enable shadow casting for the model
-        />
+        <primitive ref={modelRef4} object={scene} scale={scale} castShadow />
       </Center>
     );
   };
