@@ -368,73 +368,94 @@ export default function ProfilePage (params: { params: { username: string } }) {
     if (!AssetsData || !AssetsData.mutable_data || !AssetsData.mutable_data.page_content) {
       return null; // Return null if asset data or page_content is missing or not yet loaded
     }
-
-    // Parse blocks from page_content, handle potential parsing errors
-    let blocks = [];
+  
+    type ContentBlock = {
+      id?: string;
+      type: string;
+      data: {
+        text?: string;
+        items?: { content: string }[];
+        file?: { url: string };
+        caption?: string;
+        code?: string;
+        html?: string;
+        content?: string[][];
+        title?: string;
+        message?: string;
+      };
+    };
+  
+    let blocks: ContentBlock[] = [];
     try {
       const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
-      blocks = parsedData.blocks || []; // Use an empty array if blocks are null or undefined
+      blocks = parsedData.blocks || [];
     } catch (error) {
-      console.error('Error parsing page content:', error);
-      // Optionally handle parsing error here (e.g., set blocks to empty array)
+      console.error("Error parsing page content:", error);
       blocks = [];
     }
-
-    return blocks.map((block, index) => {
+  
+    return blocks.map((block: ContentBlock, index) => {
       switch (block.type) {
-        case 'paragraph':
+        case "paragraph":
           return <p key={index}>{block.data.text}</p>;
-        case 'header':
+        case "header":
           return <h2 key={index}>{block.data.text}</h2>;
-        case 'link': <h2 key={index}>{block.data.text}</h2>;
-        case 'quote':
+        case "link":
+          return <h2 key={index}>{block.data.text}</h2>;
+        case "quote":
           return (
-            <div style={{marginBottom: 20}} key={index} dangerouslySetInnerHTML={{ __html: block.data.text }}></div>
+            <div
+              style={{ marginBottom: 20 }}
+              key={index}
+              dangerouslySetInnerHTML={{ __html: block.data.text || "" }}
+            ></div>
           );
-        case 'list':
+        case "list":
           return (
             <ul key={index}>
-              {block.data.items.map((item, itemIndex) => (
+              {block.data.items?.map((item, itemIndex) => (
                 <li key={itemIndex}>{item.content}</li>
               ))}
             </ul>
           );
-        case 'image':
-          return <img key={index} src={block.data.file.url} alt={block.data.caption} />;
-        case 'code':
+        case "image":
+          return <img key={index} src={block.data.file?.url || ""} alt={block.data.caption || ""} />;
+        case "code":
           return <pre key={index}>{block.data.code}</pre>;
-        case 'rawHtml':
-          return <div key={index} dangerouslySetInnerHTML={{ __html: block.data.html }} />;
-        case 'delimiter':
+        case "rawHtml":
+          return <div key={index} dangerouslySetInnerHTML={{ __html: block.data.html || "" }} />;
+        case "delimiter":
           return <hr key={index} />;
-        case 'table':
-            if (block.data && block.data.content && Array.isArray(block.data.content)) {
-                return (
-                    <table key={block.id} style={{background: '#6b6b6b'}}>
-                        <tbody>
-                            {block.data.content.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {row.map((cell, cellIndex) => (
-                                        <td key={cellIndex}>{cell}</td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                );
-            }
-        case 'warning':
+        case "table":
+          if (block.data.content && Array.isArray(block.data.content)) {
+            return (
+              <table key={block.id} style={{ background: "#6b6b6b" }}>
+                <tbody>
+                  {block.data.content.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          }
+          return null;
+        case "warning":
           return (
-          <div key={block.id} className="warning">
+            <div key={block.id} className="warning">
               <h3>{block.data.title}</h3>
               <p>{block.data.message}</p>
-          </div>
+            </div>
           );
         default:
-          return null; // Handle unrecognized block types gracefully
+          return null;
       }
     });
   };
+  
 
 
   useEffect(() => {
