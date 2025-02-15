@@ -191,19 +191,17 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const loadEditorDataFromAPI = async () => {
     if (!initialized || loading || editorContentLoaded || !AssetsData || !editorInstance) return; // ✅ Check if editorInstance is defined
     setLoading(true);
+    const { default: EditorJs } = await import('@editorjs/editorjs');
   
     try {
       const response = await fetch(`https://proton.api.atomicassets.io/atomicassets/v1/assets/${AssetsData.asset_id}`);
       const data = await response.json();
   
-      if (AssetsData.mutable_data?.page_content) { // ✅ Ensure page_content exists
+      if (AssetsData.mutable_data?.page_content) {
         const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
   
-        if (editorInstance) { // ✅ Check again before calling render
-          await editorInstance.render(parsedData);
-        } else {
-          console.warn("Editor instance is not initialized.");
-        }
+        // ✅ Make sure editorInstance is not null before calling `render`
+        await editorInstance.current.render(parsedData);
       }
   
       setEditorContentLoaded(true);
@@ -214,7 +212,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
       setLoading(false);
     }
   };
-  
   
 
   useEffect(() => {
@@ -392,7 +389,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
                 },
               });
   
-          
               setEditorInstance(editor);
               setInitialized(true);
   
