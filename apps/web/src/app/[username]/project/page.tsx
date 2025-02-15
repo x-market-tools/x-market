@@ -519,6 +519,15 @@ export default function ProfilePage (params: { params: { username: string } }) {
     title: string;
     description?: string; // Optional field
     created_at: string;
+    projectID: string;   // ✅ Ensure this exists in your database
+    projectOwner: string;
+    taskTitle: string;
+    taskContent: string;
+    taskLink: string;
+    taskEmail: string;
+    taskPriority: string;
+    taskStatus: string;
+    taskPrice: number;
   };
 
   const [tasks, setTasks] = useState<Task[]>([]); // Explicitly define type as Task[]
@@ -622,26 +631,29 @@ export default function ProfilePage (params: { params: { username: string } }) {
   
 
   const handleBuyProduct = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    productTitle: string,
-    productPrice: number
+    e: React.MouseEvent<HTMLButtonElement>, 
+    productTitle?: string, 
+    productPrice?: number
   ) => {
     e.preventDefault();
   
-    // Insert data into the 'PurchasedProducts' table in Supabase
+    if (!productTitle || !productPrice) {
+      console.error("Invalid product details!");
+      return;
+    }
+  
+    // Insert data into the 'PurchasedProducts' table
     const { data, error } = await supabase
-      .from('PurchasedProducts')
+      .from('PurchasedProducts') 
       .insert([{ purProductTitle: productTitle, purProductPrice: productPrice, projectID, projectOwner }]);
   
     if (error) {
       setmessageReward(`Error: ${error.message}`);
     } else {
       setmessageReward('Product purchased successfully!');
-      setproductTitle('');
-      setproductPrice('');
-      setprojectID([]); // Reset project ID
     }
   };
+  
   
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);  // State for selected product
@@ -802,31 +814,29 @@ export default function ProfilePage (params: { params: { username: string } }) {
                   </div>
 
                   {loadingSupa ? (
-                      <p>Loading...</p>
-                    ) : (
-                      <ul>
-                        {tasks
-                        .filter(taskdata => taskdata.projectID === template.template_id)
+                    <p>Loading...</p>
+                  ) : (
+                    <ul>
+                      {tasks
+                        .filter((taskdata) => taskdata.projectID === template.template_id) // ✅ Type now recognized
                         .map((task) => (
                           <div key={task.id}>
-                            
                             <div className="project_task">
-                              <p>Tilte: <span>{task.taskTitle}</span></p>
+                              <p>Title: <span>{task.taskTitle}</span></p>
                               <p>Content: <span>{task.taskContent}$</span></p>
                               <p>Link: <span>{task.taskLink}</span></p>
                               <p>Email: <span>{task.taskEmail}</span></p>
                               <p>Priority: <span>{task.taskPriority}</span></p>
                               <p>Status: <span>{task.taskStatus}</span></p>
                               <p>Budget: <span style={{color: '#ffbe84'}}>{task.taskPrice}</span></p>
-                              
+
                               {task.projectOwner === session?.auth.actor.toString() && (
                                 <div className="project_deletetasks_pad" onClick={(e) => handleTaskDelete(e, task.id)}><p>Delete</p></div>
                               )}
-                                                               
                             </div>
                           </div>
                         ))}
-                      </ul>
+                    </ul>
                   )}
                 </div>
 
@@ -999,7 +1009,18 @@ export default function ProfilePage (params: { params: { username: string } }) {
                         <h1>Product name: {selectedProduct?.productTitle}</h1>
                         <p>Product price: <span>{selectedProduct?.productPrice}</span>$</p>
                         <button onClick={handleCloseModal}>Close</button>
-                        <button onClick={(e) => handleBuyProduct(e, selectedProduct?.productTitle, selectedProduct?.productPrice)}>Buy</button>
+                        <button 
+                          onClick={(e) => {
+                            if (selectedProduct) {
+                              handleBuyProduct(e, selectedProduct.productTitle, selectedProduct.productPrice);
+                            } else {
+                              console.error("No product selected!");
+                            }
+                          }}
+                          disabled={!selectedProduct} // Disable button if no product is selected
+                        >
+                          Buy
+                        </button>
                         <p>{messageReward && messageReward}</p>
                       </div>
                     </div>
