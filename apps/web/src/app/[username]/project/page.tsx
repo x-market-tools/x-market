@@ -229,7 +229,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
               try {
               const { default: Header } = await import('@editorjs/header');
               const { default: EditorJs } = await import('@editorjs/editorjs');
-              const { default: LinkTool } = await import('@editorjs/link');
+              const LinkTool = await import('@editorjs/link').then(m => m.default as any);
               const { default: RawHTML } = await import('@editorjs/raw');
               const { default: CheckList } = await import('@editorjs/simple-image');
               const { default: Embed } = await import('@editorjs/embed');
