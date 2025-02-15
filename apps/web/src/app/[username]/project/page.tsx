@@ -32,7 +32,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const {session} = apiCoreUseStoreState(state=>state.auth.data);
 
   const [TemplatesData, setTemplates] = useState<ITemplate[]>([]);
-  const [AssetsData, setAssetsData] = useState<IAsset[]>([]);
+  const [AssetsData, setAssetsData] = useState<IAsset | undefined>(undefined);
   const [filteredTemplatesData, setFilteredTemplatesData] = useState<ITemplate | undefined>(undefined);
 
   const [Show3DModal, setShow3DModal] = useState(false);
@@ -143,7 +143,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
           setAssetsData(AssetCheck); // Store it as an array
           setprojectID(AssetCheck.template?.template_id ? [AssetCheck.template.template_id.toString()] : []);
         } else {
-          setAssetsData([]); // Set an empty array if no match is found
+          setAssetsData(undefined); // Set an empty array if no match is found
           setprojectID(""); // Provide a default empty string or a fallback value
         }
 
