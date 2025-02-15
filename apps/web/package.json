@@ -35,6 +35,8 @@
     "@editorjs/underline": "^1.1.0",
     "@editorjs/warning": "^1.4.0",
     "@pinata/sdk": "^2.1.0",
+    "@proton/api": "^28.7.1",
+    "@proton/web-sdk": "^4.2.19",
     "@react-three/drei": "^9.121.5",
     "@react-three/fiber": "^8.17.14",
     "@supabase/supabase-js": "^2.45.3",
