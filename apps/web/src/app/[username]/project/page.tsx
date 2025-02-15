@@ -184,8 +184,8 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const GATEWAY_TOKEN = "t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK";
 
 
-  const handleChange_Editor = (html) => {
-    setPage_content(html);
+  const handleChange_Editor = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPage_content(event.target.value);
   };
 
   const loadEditorDataFromAPI = async () => {
