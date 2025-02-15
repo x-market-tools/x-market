@@ -241,61 +241,61 @@ export default function ProfilePage (params: { params: { username: string } }) {
                       config: {
                           buttonContent: '<img src={`https://coral-military-marten-346.mypinata.cloud/ipfs/${cid5}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`} alt="_"/>',
                           uploader: {
-                              uploadByFile(file) {
-                                  return new Promise(async (resolve, reject) => {
-                                      try {
-                                          console.log('Starting file upload...');
+                              uploadByFile(file: File) {
+                                return new Promise(async (resolve, reject) => {
+                                  try {
+                                    console.log('Starting file upload...');
+                                    
+                                    // Create FormData object to prepare file upload
+                                    const formData = new FormData();
+                                    formData.append("file", file, file.name); // Corrected filename syntax
                               
-                                          // Create FormData object to prepare file upload
-                                          const formData = new FormData();
-                                          formData.append("file", file, { filename: file.name });
+                                    // Prepare metadata and options as JSON strings
+                                    const metadata = JSON.stringify({ name: file.name });
+                                    formData.append("pinataMetadata", metadata);
                               
-                                          // Prepare metadata and options as JSON strings
-                                          const metadata = JSON.stringify({
-                                              name: file.name,
-                                          });
-                                          formData.append("pinataMetadata", metadata);
+                                    const options = JSON.stringify({ cidVersion: 0 });
+                                    formData.append("pinataOptions", options);
                               
-                                          const options = JSON.stringify({
-                                              cidVersion: 0,
-                                          });
-                                          formData.append("pinataOptions", options);
+                                    // Log FormData contents (for debugging purposes)
+                                    for (const [key, value] of formData.entries()) {
+                                      console.log(`${key}: ${value}`);
+                                    }
                               
-                                          // Log FormData contents (for debugging purposes)
-                                          for (const [key, value] of formData.entries()) {
-                                              console.log(`${key}: ${value}`);
-                                          }
+                                    // Make a POST request to Pinata API for file upload
+                                    const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+                                      method: "POST",
+                                      headers: {
+                                        Authorization: `Bearer ${pinataJWTKey}`, // Ensure 'pinataJWTKey' is defined and valid
+                                      },
+                                      body: formData,
+                                    });
                               
-                                          // Make a POST request to Pinata API for file upload
-                                          const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-                                              method: "POST",
-                                              headers: {
-                                                  Authorization: `Bearer ${pinataJWTKey}`, // Ensure 'pinataJWTKey' is defined and valid
-                                              },
-                                              body: formData,
-                                          });
+                                    // Check if the request was successful (HTTP status 200-299)
+                                    if (!res.ok) {
+                                      throw new Error(`File upload failed with status: ${res.status}`);
+                                    }
                               
-                                          // Check if the request was successful (HTTP status 200-299)
-                                          if (!res.ok) {
-                                              throw new Error(`File upload failed with status: ${res.status}`);
-                                          }
+                                    // Extract the IPFS hash from the response
+                                    const ipfsHash = await res.json();
+                                    console.log('File upload successful. IPFS Hash:', ipfsHash);
                               
-                                          // Extract the IPFS hash from the response
-                                          const ipfsHash = await res.json();
-                                          console.log('File upload successful. IPFS Hash:', ipfsHash);
-  
-                                          const WE = ipfsHash.IpfsHash;
-  
-                                          resolve({ success: 1, file: { url: `https://coral-military-marten-346.mypinata.cloud/ipfs/${WE}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK` } });
-  
-                                          setCid5(WE)
-                                      } catch (error) {
-                                          console.error('File upload error:', error);
-                                          reject('Upload failed');
+                                    const WE = ipfsHash.IpfsHash;
+                              
+                                    resolve({
+                                      success: 1,
+                                      file: {
+                                        url: `https://coral-military-marten-346.mypinata.cloud/ipfs/${WE}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`
                                       }
-                                  });
-                              },
+                                    });
                               
+                                    setCid5(WE);
+                                  } catch (error) {
+                                    console.error('File upload error:', error);
+                                    reject('Upload failed');
+                                  }
+                                });
+                              },                   
                           },
                       },
                   },
