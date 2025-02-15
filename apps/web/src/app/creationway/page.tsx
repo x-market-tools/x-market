@@ -688,7 +688,7 @@ export default function CreationWay () {
                         </div>
                     </div>
 
-                    {CollectionName === null ? (
+                    {CollectionName ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
                                 <div className='text' >Next</div>
@@ -758,7 +758,7 @@ export default function CreationWay () {
                         </div>
                     </div>
 
-                    {CollectionCoverPicture === null || CollectionName === null ? (
+                    {CollectionCoverPicture || CollectionName ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
                                 <div className='text'>Next</div>
@@ -989,7 +989,7 @@ export default function CreationWay () {
                     </div>
                 </div>
                 
-                {ProjectType === null || ProjectForm === null || FirstCategory === null ? (
+                {ProjectType || ProjectForm  || FirstCategory ? (
                     <div className='beTheFirst' style={{opacity: 0.2}}>
                         <div className='buttonStart'>
                             <div className='text'>Next</div>
@@ -1062,7 +1062,7 @@ export default function CreationWay () {
                         </div>
                     </div>
 
-                    {ProjectCoverPicture === null || ProjectSubtitle === null || ProjectTitle === null ? (
+                    {ProjectCoverPicture  || ProjectSubtitle  || ProjectTitle  ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
                                 <div className='text'>Next</div>
