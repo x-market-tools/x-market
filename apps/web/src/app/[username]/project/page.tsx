@@ -16,7 +16,17 @@ import { OrbitControls, useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
 
 
-const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
+type FetchFix = (input?: Request | string, init?: RequestInit) => Promise<Response>;
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
+export async function getData(userName:string) {
+
+  try {
+    return explorer.getTemplates({authorized_account:userName})
+  } catch (error) {
+    
+  }
+
+}
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -24,7 +34,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 
-export default function ProfilePage (params: { username: string }) {
+export default function ProfilePage (params: { params: { username: string } }) {
 
   const {connect} = apiCoreUseStoreActions(state=>state.auth);
   const {session} = apiCoreUseStoreState(state=>state.auth.data);
