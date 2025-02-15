@@ -4,6 +4,7 @@ import React, { useMemo, Component, useState, useCallback, useEffect, useRef } f
 import { apiCoreUseStoreActions, apiCoreUseStoreState } from '@/store/hooks';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ChangeEvent } from "react";
 
 // ATOM
 import { ExplorerApi } from "atomicassets";
@@ -21,8 +22,7 @@ import EventIcon from "../../interfaces/icons/eventicon.svg";
 import AddFileIcon from "../../interfaces/icons/addfileicon.svg";
 
 // GET ATOM DATA
-const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
-
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
 
 export default function CreationWay () {
 
@@ -44,7 +44,9 @@ export default function CreationWay () {
 
     // COLLECTION GENERATION FUNCTION
 
-    const [GeneratedCollectionName, setGeneratedCollectionName] = useState(null);
+    const [GeneratedCollectionName, setGeneratedCollectionName] = useState<string | null>(null);
+    const [CollectionName, setCollectionName] = useState<string | null>(null);
+    const [CollectionCoverPicture, setCollectionCoverPicture] = useState<string | null>(null);
 
     const generateGeneratedCollectionName = () => {
         const characters = '1234';
@@ -60,99 +62,94 @@ export default function CreationWay () {
 
 
     // GET COLLECTIONS
-
         const [CollectionData, setCollectionData] = useState<IAsset[]>([]);
-        const [FilteredCollections, setFilteredCollections] = useState([]);
-        const [FilteredTemplate, setFilteredTemplate] = useState([]);
+        const [FilteredCollections, setFilteredCollections] = useState<any[]>([]);
+        const [FilteredTemplate, setFilteredTemplate] = useState<any[]>([]);
         const [TamplateID, setTamplateID] = useState(null);
 
         useEffect(() => {
-        
             const fetchDataAsset = async () => {
-            try {
-        
+              if (!session?.auth?.actor) return; // ✅ Avoid fetching if session is not available
+          
+              try {
                 const Collections = await explorer.getAssets();
                 setCollectionData(Collections);
-
-                const FindCollection = Collections.filter(assets => assets.collection.author === session?.auth.actor.toString());
-                setFilteredCollections(FindCollection)
-
-            } catch (error) {
+          
+                const FindCollection = Collections.filter(
+                  (assets) => assets.collection.author === session.auth.actor.toString()
+                );
+                setFilteredCollections(FindCollection);
+              } catch (error) {
                 console.error('Error fetching template details:', error);
-            }
+              }
             };
-        
+          
             fetchDataAsset();
-        
-        }, [session]);
+          
+        }, [session, explorer]); // ✅ Add `explorer` if it's an external dependency
+          
+        interface Template {
+            template_id: string;
+            collection: {
+              collection_name: string;
+            };
+        }
 
         useEffect(() => {
-        
-            // Initially fetch the templates
+            let isMounted = true; // ✅ Prevent state update if unmounted
+          
             const fetchTemplates = async () => {
               try {
-                const response = await fetch('https://proton.api.atomicassets.io/atomicassets/v1/templates');
+                const response = await fetch(
+                  'https://proton.api.atomicassets.io/atomicassets/v1/templates'
+                );
                 const responseData = await response.json();
-                
-        
-                if (responseData && responseData.data && responseData.data.length > 0) {
-                    setFilteredTemplate(responseData.data);
-        
-                  // Generate random string here once
-      
-                  const matchingTemplate = responseData.data.find(template => {
-                    if (template.collection.collection_name === GeneratedCollectionName) {
-                        setTamplateID(template.template_id); // Set the template_id based on the matching random string
-                      return true;
-                      
-                    }
-                    return false;
-                  });
-        
-                  if (!matchingTemplate) {
-                    setTamplateID(null); // Reset templateId if no matching template found
-                  }
+          
+                if (isMounted && responseData?.data?.length > 0) {
+                  setFilteredTemplate(responseData.data);
+          
+                  const matchingTemplate = FilteredTemplate.find((template: Template) => 
+                    template.collection.collection_name === GeneratedCollectionName
+                    );
+          
+                  setTamplateID(matchingTemplate ? matchingTemplate.template_id : null);
                 } else {
-                  console.log('No data found.');
-                  setFilteredTemplate([]);
-                  setTamplateID(null); // Reset templateId if no data found
+                  if (isMounted) {
+                    setFilteredTemplate([]);
+                    setTamplateID(null);
+                  }
                 }
               } catch (error) {
                 console.error('Error fetching data:', error);
-                setFilteredTemplate([]);
-                setTamplateID(null); // Reset templateId if error occurs
+                if (isMounted) {
+                  setFilteredTemplate([]);
+                  setTamplateID(null);
+                }
               }
-             
             };
-
-            const matchingTemplate = FilteredTemplate.find(template => template.collection.collection_name === GeneratedCollectionName);
-            if (matchingTemplate) {
-                setTamplateID(matchingTemplate.template_id);
-            } else {
-                setTamplateID(null);
-            }
-    
-            fetchTemplates();
-     
-            // Update data every 5ms
-            const interval = setInterval(() => {
-                fetchTemplates();
-            }, 500);
-        
-            return () => clearInterval(interval); // Cleanup interval
-            // Clear interval on unmount or cleanup
-      
-        }, [FilteredTemplate, GeneratedCollectionName]);
+          
+            fetchTemplates(); // ✅ Fetch immediately
+          
+            // Update data every 5 seconds instead of 500ms
+            const interval = setInterval(fetchTemplates, 5000);
+          
+            return () => {
+              isMounted = false; // ✅ Prevent state update on unmount
+              clearInterval(interval); // ✅ Cleanup interval on unmount
+            };
+          }, [GeneratedCollectionName]); // ✅ Removed `FilteredTemplate` to prevent infinite loops
+          
 
 
 
     // CHOSE COLLECTION
 
-        const handleChosedCollectionData = (collectionId, collectionName, collectionImg) => {
+        const handleChosedCollectionData = (collectionId: string, collectionName: string, collectionImg: string) => {
             setGeneratedCollectionName(collectionId);
             setCollectionName(collectionName);
             setCollectionCoverPicture(collectionImg);
         };
+
 
         const handleGeneratedCollectionName = () => {
             // Generate the random string and set it in the state
@@ -163,60 +160,61 @@ export default function CreationWay () {
 
     // UPLOAD COLLECTION COVER
 
-        const [FileSelection, setFileSelection] = useState(null);
+        const [FileSelection, setFileSelection] = useState<{ file: File; previewURL: string } | null>(null);
 
-        const handleSubmissionProcess = async (file, setCollectionCoverPicture) => {
+        const handleSubmissionProcess = async (file: File, setPicture: React.Dispatch<React.SetStateAction<string | null>>) => {
             try {
               const formData = new FormData();
-              formData.append("file", file.file);
+              formData.append("file", file);
+          
               const metadata = JSON.stringify({
-                name: file.file.name,
+                name: file.name,
               });
               formData.append("pinataMetadata", metadata);
-        
+          
               const options = JSON.stringify({
                 cidVersion: 0,
               });
               formData.append("pinataOptions", options);
-        
-              const res = await fetch(
-                "https://api.pinata.cloud/pinning/pinFileToIPFS",
-                {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${PINATA_JWT}`,
-                  },
-                  body: formData,
-                }
-              );
-        
+          
+              const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${PINATA_JWT}`,
+                },
+                body: formData,
+              });
+          
               const resData = await res.json();
-              setCollectionCoverPicture(resData.IpfsHash);
+              setPicture(resData.IpfsHash);  // ✅ No type conflict now
+          
               console.log(resData);
             } catch (error) {
               console.log(error);
             }
-        };
+          };
+          
+          
 
-        const UploadPinataCollectionCover = (event) => {
-            const file = event.target.files[0];
-            setFileSelection(file);
-        
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                setFileSelection({
-                  file,
-                  previewURL: reader.result,
-                });
-              };
-              reader.readAsDataURL(file);
-            }     
-        };
-    
-        const handleSubmission = async () => {
-            await handleSubmissionProcess(FileSelection, setCollectionCoverPicture);
-        };
+          const UploadPinataCollectionCover = (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0]; // Ensure file exists
+          
+            if (!file) return; // Exit if no file is selected
+          
+            const reader = new FileReader();
+            reader.onload = () => {
+              setFileSelection({ file, previewURL: reader.result as string }); // Ensure type matches
+            };
+            reader.readAsDataURL(file);
+          };
+
+          const handleSubmission = async () => {
+            if (FileSelection) {
+              await handleSubmissionProjectProcess(FileSelection.file, setProjectCoverPicture);
+            }
+          };
+          
+          
     
         useEffect(() => {
             handleSubmission();
@@ -225,14 +223,13 @@ export default function CreationWay () {
     // CREATE COLLECTION
 
         // CREATE COLLECTION DATA
-        const [CollectionName, setCollectionName] = useState(null);
-        const [CollectionCoverPicture, setCollectionCoverPicture] = useState(null);
+
         const [CollectionDescription, setCollectionDescription] = useState("");
 
         // CREATE COLLECTION FUNCTION
         async function atomCreationCollection() {
                 
-                await session.transact(
+                await session?.transact(
                     {
                         actions: [
                             {
@@ -300,7 +297,7 @@ export default function CreationWay () {
 
         async function atomCreationSchema() {
         
-            await session.transact(
+            await session?.transact(
                 {
                     actions: [
                         {
@@ -335,122 +332,128 @@ export default function CreationWay () {
 
         // CHOOSING PROJECT TYPE
 
-        const [ProjectType, setProjectType] = useState(null);
+        const [ProjectType, setProjectType] = useState<string | null>(null);
 
         // Handler function to capture the selected radio button value
-        const handleRadioChange = (event) => {
-            setProjectType(event.target.value);
-        };
 
+        const handleRadioChange = (event: ChangeEvent<HTMLInputElement>) => {
+          setProjectType(event.target.value);
+        };
+        
         // CATEGORY LIST
 
-        const [SelectedCategory, setSelectedCategory] = useState([]);
-        const [FirstCategory, setFirstCategory] = useState(null);
-        const [SecondCategory, setSecondCategory] = useState(null);
-        const [ThirdCategory, setThirdCategory] = useState(null);
+        const [SelectedCategory, setSelectedCategory] = useState<any[]>([]);
+        const [FirstCategory, setFirstCategory] = useState<string | null>(null);
+        const [SecondCategory, setSecondCategory] = useState<string | null>(null);
+        const [ThirdCategory, setThirdCategory] = useState<string | null>(null);
     
-        const handleSelectedCategory = (value) => {
-        // If the checkbox is already selected, remove it from the array; otherwise, add it
-        setSelectedCategory((prevSelected) =>
-            prevSelected.includes(value)
-            ? prevSelected.filter((item) => item !== value)
-            : [...prevSelected, value]
-        );
-    
-        // Update selected category constants based on the number of selected checkboxes
-        if (SelectedCategory.length < 3) {
-            if (!FirstCategory) {
+        const handleSelectedCategory = (value: string) => {
+            setSelectedCategory((prevSelected: string[]) =>
+              prevSelected.includes(value)
+                ? prevSelected.filter((item) => item !== value)
+                : [...prevSelected, value]
+            );
+          
+            // Update selected category constants based on the number of selected checkboxes
+            if (SelectedCategory.length < 3) {
+              if (!FirstCategory) {
                 setFirstCategory(value);
-            } else if (!SecondCategory) {
+              } else if (!SecondCategory) {
                 setSecondCategory(value);
-            } else if (!ThirdCategory) {
+              } else if (!ThirdCategory) {
                 setThirdCategory(value);
-            }
-        } else {
-            // If 3 checkboxes are already selected, update the constants based on the latest choice
-            if (FirstCategory === value) {
+              }
+            } else {
+              // If 3 checkboxes are already selected, update the constants based on the latest choice
+              if (FirstCategory === value) {
                 setFirstCategory(null);
-            } else if (SecondCategory === value) {
+              } else if (SecondCategory === value) {
                 setSecondCategory(null);
-            } else if (ThirdCategory === value) {
+              } else if (ThirdCategory === value) {
                 setThirdCategory(null);
+              }
             }
-        }
-        };
+          };
+          
     
         // CHOOSING PROJECT FROM
 
-        const [ProjectForm, setProjectForm] = useState(null);
+        const [ProjectForm, setProjectForm] = useState<string | null>(null);
 
         // Handler function to capture the selected radio button value
-        const handleProjectForm = (event) => {
+        const handleProjectForm = (event: ChangeEvent<HTMLInputElement>) => {
             setProjectForm(event.target.value);
         };
 
         // PROJECT INFORMATION
 
-        const [ProjectTitle, setProjectTitle] = useState(null);
-        const [ProjectSubtitle, setProjectSubtitle] = useState(null);
-        const [ProjectDiscribe, setProjectDiscribe] = useState(null);
-        const [ProjectConcept, setProjectConcept] = useState(null);
+        const [ProjectTitle, setProjectTitle] = useState<string | null>(null);
+        const [ProjectSubtitle, setProjectSubtitle] = useState<string | null>(null);
+        const [ProjectDiscribe, setProjectDiscribe] = useState<string | null>(null);
+        const [ProjectConcept, setProjectConcept] = useState<string | null>(null);
 
         // UPLOAD PROJECT COVER
 
-        const [ProjectFileSelection, setProjectFileSelection] = useState(null);
-        const [ProjectCoverPicture, setProjectCoverPicture] = useState(null);
+        const [ProjectFileSelection, setProjectFileSelection] = useState<{ 
+            file: File; 
+            previewURL: string; 
+          } | null>(null);
+          
+        const [ProjectCoverPicture, setProjectCoverPicture] = useState<string | null>(null);
 
-        const handleSubmissionProjectProcess = async (file, setCollectionCoverPicture) => {
+        const handleSubmissionProjectProcess = async (
+            file: File,
+            setProjectCoverPicture: React.Dispatch<React.SetStateAction<string | null>>
+          ) => {
             try {
               const formData = new FormData();
-              formData.append("file", file.file);
-              const metadata = JSON.stringify({
-                name: file.file.name,
-              });
+              formData.append("file", file);
+          
+              const metadata = JSON.stringify({ name: file.name });
               formData.append("pinataMetadata", metadata);
-        
-              const options = JSON.stringify({
-                cidVersion: 0,
-              });
+          
+              const options = JSON.stringify({ cidVersion: 0 });
               formData.append("pinataOptions", options);
-        
-              const res = await fetch(
-                "https://api.pinata.cloud/pinning/pinFileToIPFS",
-                {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${PINATA_JWT}`,
-                  },
-                  body: formData,
-                }
-              );
-        
+          
+              const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${PINATA_JWT}`,
+                },
+                body: formData,
+              });
+          
               const resData = await res.json();
               setProjectCoverPicture(resData.IpfsHash);
               console.log(resData);
             } catch (error) {
-              console.log(error);
+              console.error("Error uploading file:", error);
             }
-        };
+          };
+          
 
-        const UploadPinataProjectCover = (event) => {
-            const file = event.target.files[0];
-            setProjectFileSelection(file);
-        
+          const UploadPinataProjectCover = (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0];
+          
             if (file) {
               const reader = new FileReader();
               reader.onload = () => {
                 setProjectFileSelection({
                   file,
-                  previewURL: reader.result,
+                  previewURL: reader.result as string, // Ensure it's a string
                 });
               };
               reader.readAsDataURL(file);
-            }     
-        };
+            }
+          };
+          
     
-        const handleProjectSubmission = async () => {
-            await handleSubmissionProjectProcess(ProjectFileSelection, setProjectCoverPicture);
-        };
+          const handleProjectSubmission = async () => {
+            if (ProjectFileSelection) {
+              await handleSubmissionProjectProcess(ProjectFileSelection.file, setProjectCoverPicture);
+            }
+          };
+          
     
         useEffect(() => {
             handleProjectSubmission();
@@ -504,7 +507,7 @@ export default function CreationWay () {
     // CREATE TEMPLATE FUNCTION
     async function atomCreationTemplate() {
 
-        await session.transact(
+        await session?.transact(
             {
                 actions: [
                     {
@@ -532,7 +535,7 @@ export default function CreationWay () {
     // CREATE NFT FUNCTION
     async function atomCreationNFT() {
 
-        await session.transact(
+        await session?.transact(
             {
                 actions: [
                     {
@@ -709,7 +712,14 @@ export default function CreationWay () {
                         <div className='creation_way_project_type_title_input'><p>Set a name for your workspace</p></div>
 
                         <div className='creation_way_project_type_input'>
-                            <input type='email' onChange={(e)=>setCollectionName(e.target.value)} placeholder="Workspace name" value={CollectionName}/>
+                        <input 
+  type="text" 
+  onChange={(e) => setCollectionName(e.target.value)} 
+  placeholder="Workspace name" 
+  value={CollectionName || ''} // 👈 Converts null to an empty string
+/>
+
+
                             <div className='hint'>Keep it simple</div>
                         </div>        
                     </div>
@@ -1110,7 +1120,9 @@ export default function CreationWay () {
 
             {describeProject && (
                 <div>
-                    <div className='creation_way_block_title_home'><p>Describe concept {FilteredTemplate?.template?.template_id}</p></div>
+                    <div className='creation_way_block_title_home'>
+                    <p>Describe concept {FilteredTemplate?.[0]?.template_id || 'N/A'}</p>
+                    </div>
                     
                     <div className='creation_way_project_type_thumb'>
                         <div className='creation_way_project_type_title_input'><p>What will the product make better? </p></div>

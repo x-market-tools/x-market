@@ -9,7 +9,7 @@ import React, { useMemo, Component, useState, useCallback, useEffect, useRef } f
 // COMPONENTS
 import { MainNavigation } from "@/components/header/header";
 
-const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
 
 export default function CollectionDetailsPage() {
 

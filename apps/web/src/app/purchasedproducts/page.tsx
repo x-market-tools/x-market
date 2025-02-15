@@ -8,7 +8,7 @@ import { ExplorerApi } from "atomicassets";
 // COMPONENTS
 import { MainNavigation } from "@/components/header/header";
 
-const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -21,19 +21,21 @@ export default function PurchasedProducts () {
   const {session} = apiCoreUseStoreState(state=>state.auth.data);
 
   // PRODUCTS
-  const [PurProductData, setPurProductData] = useState([]);
-  const [loadingPurProductData, setloadingPurProductData] = useState(true);
+  const [PurProductData, setPurProductData] = useState<any[]>([]);
+  const [loadingPurProductData, setloadingPurProductData] = useState<boolean>(true);
 
   // Fetch data from Supabase table
   const fetchProductData = async () => {
+    setloadingPurProductData(true);
+    
     const { data, error } = await supabase
-      .from('PurchasedProducts')  // Replace with your table name
-      .select('*');  // Select all columns
-
+      .from('PurchasedProducts')
+      .select('*');
+  
     if (error) {
       console.log('Error fetching data:', error);
     } else {
-        setPurProductData(data);  // Store fetched data in state
+      setPurProductData(data || []); // ✅ Ensure it's always an array
     }
     setloadingPurProductData(false);
   };
