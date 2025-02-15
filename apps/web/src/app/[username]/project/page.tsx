@@ -138,8 +138,14 @@ export default function ProfilePage (params: { params: { username: string } }) {
         const AssetCheck = FilteredAssetData.find(
           (assets) => assets.template && assets.template.template_id === params.params.username
         );
-        setAssetsData(AssetCheck);
-        setprojectID(AssetCheck.template.template_id.toString())
+        
+        if (AssetCheck) {
+          setAssetsData([AssetCheck]); // Store it as an array
+          setprojectID(AssetCheck.template.template_id.toString());
+        } else {
+          setAssetsData([]); // Set an empty array if no match is found
+          setprojectID(""); // Provide a default empty string or a fallback value
+        }
 
       } catch (error) {
         console.error('Error fetching template details:', error);
