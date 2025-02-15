@@ -189,13 +189,18 @@ export default function ProfilePage (params: { params: { username: string } }) {
   };
 
   const loadEditorDataFromAPI = async () => {
-    if (!initialized || loading || editorContentLoaded) return;
+    if (!initialized || loading || editorContentLoaded || !AssetsData) return; // ✅ Check if AssetsData is defined
     setLoading(true);
+  
     try {
       const response = await fetch(`https://proton.api.atomicassets.io/atomicassets/v1/assets/${AssetsData.asset_id}`);
       const data = await response.json();
-      const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
-      await editorInstance.render(parsedData);
+  
+      if (AssetsData.mutable_data?.page_content) { // ✅ Ensure page_content exists
+        const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
+        await editorInstance.render(parsedData);
+      }
+  
       setEditorContentLoaded(true);
       console.log('Editor content set from API data successfully');
     } catch (error) {
@@ -204,6 +209,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     loadEditorDataFromAPI();
