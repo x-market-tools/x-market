@@ -15,18 +15,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
 
-
-type FetchFix = (input?: Request | string, init?: RequestInit) => Promise<Response>;
-const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
-export async function getData(userName:string) {
-
-  try {
-    return explorer.getTemplates({authorized_account:userName})
-  } catch (error) {
-    
-  }
-
-}
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
