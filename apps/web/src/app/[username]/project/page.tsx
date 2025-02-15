@@ -479,7 +479,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const [projectOwner, setprojectOwner] = useState('');
   const [messageTask, setmessageTask] = useState('');
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => { 
     // Insert data into the 'posts' table
     const { data, error } = await supabase
       .from('Tasks')  // Replace with your table name
@@ -500,15 +500,17 @@ export default function ProfilePage (params: { params: { username: string } }) {
     }
   };
 
-  const handleTaskDelete = async (e, id) => {
+  const handleTaskDelete = async (e: React.MouseEvent<HTMLDivElement>, id: number) => {
     e.preventDefault();
-
-    // Delete data into the 'posts' table
-    const response = await supabase
-    .from('Tasks')
-    .delete()
-    .eq('id', id)
-
+  
+    // Delete task from the 'Tasks' table in Supabase
+    const { error } = await supabase.from('Tasks').delete().eq('id', id);
+  
+    if (error) {
+      console.error("Error deleting task:", error);
+    } else {
+      console.log("Task deleted successfully!");
+    }
   };
 
   const [tasks, setTasks] = useState([]);
