@@ -9,6 +9,7 @@ import { CreatorFlow } from '@/components/CreatorFlow/CreatorFlow';
 import React, { useMemo, Component, useState, useCallback, useEffect, useRef } from 'react';
 import { apiCoreUseStoreActions, apiCoreUseStoreState } from '@/store/hooks';
 import { createClient } from '@supabase/supabase-js';
+import EditorJS from "@editorjs/editorjs";
 
 // THREE
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -191,17 +192,20 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const loadEditorDataFromAPI = async () => {
     if (!initialized || loading || editorContentLoaded || !AssetsData || !editorInstance) return; // ✅ Check if editorInstance is defined
     setLoading(true);
-    const { default: EditorJs } = await import('@editorjs/editorjs');
   
     try {
       const response = await fetch(`https://proton.api.atomicassets.io/atomicassets/v1/assets/${AssetsData.asset_id}`);
       const data = await response.json();
   
-      if (AssetsData.mutable_data?.page_content) {
+      if (AssetsData.mutable_data?.page_content) { // ✅ Ensure page_content exists
         const parsedData = JSON.parse(AssetsData.mutable_data.page_content);
   
-        // ✅ Make sure editorInstance is not null before calling `render`
-        await editorInstance.current.render(parsedData);
+        if (editorInstance) { // ✅ Check again before calling render
+          await (editorInstance as EditorJS).render(parsedData);
+
+        } else {
+          console.warn("Editor instance is not initialized.");
+        }
       }
   
       setEditorContentLoaded(true);
