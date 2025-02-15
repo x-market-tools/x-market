@@ -65,7 +65,7 @@ export default function CreationWay () {
         const [CollectionData, setCollectionData] = useState<IAsset[]>([]);
         const [FilteredCollections, setFilteredCollections] = useState<any[]>([]);
         const [FilteredTemplate, setFilteredTemplate] = useState<any[]>([]);
-        const [TamplateID, setTamplateID] = useState(null);
+        const [TamplateID, setTamplateID] = useState<string | null>(null);
 
         useEffect(() => {
             const fetchDataAsset = async () => {
@@ -228,39 +228,40 @@ export default function CreationWay () {
 
         // CREATE COLLECTION FUNCTION
         async function atomCreationCollection() {
-                
-                await session?.transact(
-                    {
-                        actions: [
-                            {
-                                // Create collection
-                                account: "atomicassets",
-                                name: "createcol",
-                                data: {
-                                    author: `${session?.auth.actor.toString()}`,
-                                    collection_name: GeneratedCollectionName,
-                                    allow_notify: true,
-                                    authorized_accounts: [`${session?.auth.actor.toString()}`],
-                                    notify_accounts: [],
-                                    market_fee: 0.01,
-                                    data: [
-                                    {"key": "name", "value": ["string", CollectionName]},
-                                    {"key": "img", "value": ["string", CollectionCoverPicture]},
-                                    {"key": "description", "value": ["string", CollectionDescription]},
-                                    {"key": "url", "value": ["string", "xmarket"]}
+            await session?.transact(
+                {
+                    actions: [
+                        {
+                            account: "atomicassets",
+                            name: "createcol",
+                            data: {
+                                author: session?.auth.actor.toString(),
+                                collection_name: GeneratedCollectionName,
+                                allow_notify: true,
+                                authorized_accounts: [session?.auth.actor.toString()],
+                                notify_accounts: [],
+                                market_fee: 0.01,
+                                data: [
+                                    { "key": "name", "value": ["string", CollectionName || ""] },
+                                    { "key": "img", "value": ["string", CollectionCoverPicture || ""] },
+                                    { "key": "description", "value": ["string", CollectionDescription || "No description"] },
+                                    { "key": "url", "value": ["string", "xmarket"] }
                                 ]
-                                },
-                                authorization: [{ actor: `${session?.auth.actor.toString()}`, permission: `${session?.auth.permission.toString()}` }],
-                                
-                            }
-                        ],
-                        
-                    },
-                    {broadcast: true}),
-
-                console.log(`Collection created!`)
-                console.log(GeneratedCollectionName)
-        }   
+                            },
+                            authorization: [{ 
+                                actor: session?.auth.actor.toString(), 
+                                permission: session?.auth.permission.toString() 
+                            }],
+                        }
+                    ],
+                },
+                { broadcast: true }
+            );
+        
+            console.log(`Collection created!`);
+            console.log(GeneratedCollectionName);
+        }
+         
 
         // SCHEMA
         const SCHEMA_DATA = {
@@ -634,7 +635,7 @@ export default function CreationWay () {
         console.log(ProjectSubtitle)
         console.log(ProjectTitle)
         console.log(FilteredTemplate)
-        console.log(TamplateID)
+        console.log('PRoject ID', TamplateID)
         
 
   return (
