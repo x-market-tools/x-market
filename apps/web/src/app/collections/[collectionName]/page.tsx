@@ -1,4 +1,4 @@
-"use client"
+
 
 import { ExplorerApi } from "atomicassets";
 import { ITemplate } from "atomicassets/build/API/Explorer/Objects";
@@ -12,9 +12,8 @@ async function getCollectionDetails(collectionName: string):Promise<ITemplate[]>
   const templates = await explorer.getTemplates({ collection_name: collectionName });
   return templates
 
- }
+}
  
-
 export default async function CollectionDetailsPage({ params }: { params: { collectionName: string } }) {
   
   const templatesFormCollection = await getCollectionDetails(params.collectionName);

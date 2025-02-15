@@ -11,15 +11,9 @@ import { apiCoreUseStoreActions, apiCoreUseStoreState } from '@/store/hooks';
 import { createClient } from '@supabase/supabase-js';
 
 // THREE
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader';
-import { BrightnessContrastShader } from 'three/examples/jsm/shaders/BrightnessContrastShader';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, useGLTF, Center } from "@react-three/drei";
+import * as THREE from "three";
 
 
 const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets', { fetch: fetch });
@@ -50,167 +44,59 @@ export default function ProfilePage (params: { username: string }) {
     setShowEditor(prevState => !prevState);
   };
 
-  const containerRef = useRef(null);
-  const canvasRef = useRef(null);
-  const camera = useRef(null);
-  const scene = useRef(null);
-  const renderer = useRef(null);
-  const controls = useRef(null);
-  const composer = useRef(null);
-  const model = useRef(null);
-
-  useEffect(() => {
-    if (!AssetsData || !containerRef.current) return;
-        
-    // Scene setup
-    scene.current = new THREE.Scene();
-    scene.current.background = new THREE.Color(0x353535);
-
-    // Camera setup
-    camera.current = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.current.position.set(0, 0, 2);
-
-    // Renderer setup
-    renderer.current = new THREE.WebGLRenderer({ antialias: true });
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
-
-    containerRef.current.appendChild(renderer.current.domElement);
-
-    // Orbit controls setup
-    controls.current = new OrbitControls(camera.current, renderer.current.domElement);
-    controls.current.enableDamping = true;
-
-
-    // Add point lights around the model
-    const lightColors = [0xff0000, 0x00ff00, 0x0000ff]; // Red, Green, Blue
-    const lightPositions = [
-    new THREE.Vector3(15, 0, 0), // Right
-    new THREE.Vector3(-5, 0, 0), // Left
-    new THREE.Vector3(0, 15, 0), // Top
-    new THREE.Vector3(0, -15, 0), // Bottom
-    new THREE.Vector3(0, 0, 5), // Front
-    new THREE.Vector3(0, 0, -115), // Back
-    ];
-    lightPositions.forEach((position, index) => {
-    const color = lightColors[index % lightColors.length];
-    const pointLight = new THREE.PointLight(0xffffff, 2);
-    pointLight.position.copy(position);
-    scene.current.add(pointLight);
+  // 3D LOADER
+  const RotatingModel = ({ url, scale = 1, rotationSpeed = 11.01, pauseDuration = 1000 }) => {
+    const { scene, animations  } = useGLTF(url); // Load model
+    const modelRef4 = useRef();
+  
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = false; // Optional
+      }
     });
-
-    {/* */}
-
-
-    // Ambient light setup
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
-    scene.current.add(ambientLight);
-
-    // Add directional lights around the model
-    const directionalLightPositions = [
-    { position: new THREE.Vector3(11, 1, 1) }, // Front top right
-    { position: new THREE.Vector3(-1, 1, 1) }, // Front top left
-    { position: new THREE.Vector3(111, -1, 1) }, // Front bottom right
-    { position: new THREE.Vector3(-111, -1, 1) }, // Front bottom left
-    ];
-    directionalLightPositions.forEach((lightPosition) => {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Decrease light intensity
-    directionalLight.position.copy(lightPosition.position);
-    scene.current.add(directionalLight);
-    });
-
-
-    // Add directional lights around the model
-    const directionalLights = [
-    { position: new THREE.Vector3(1, 1, -1) }, // Back top right
-    { position: new THREE.Vector3(-1, 1, -1) }, // Back top left
-    { position: new THREE.Vector3(11, -1, -1) }, // Back bottom right
-    { position: new THREE.Vector3(-1, -1, -1) }, // Back bottom left
-    ];
-
-    directionalLights.forEach((light) => {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Decrease light intensity
-    directionalLight.position.copy(light.position);
-    scene.current.add(directionalLight);
-    });
-
-
-    // Post-processing setup
-    composer.current = new EffectComposer(renderer.current);
-    composer.current.addPass(new RenderPass(scene.current, camera.current));
-
-    // Unreal bloom pass for bloom effect
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1111.5, 1510.4, 110.85);
-    composer.current.addPass(bloomPass);
-
-    // Brightness and contrast adjustment
-    const brightnessContrastPass = new ShaderPass(BrightnessContrastShader);
-    brightnessContrastPass.uniforms.brightness.value = 60.1; // Adjust brightness (default: 0)
-    brightnessContrastPass.uniforms.contrast.value = 110.5; // Adjust contrast (default: 0)
-    composer.current.addPass(brightnessContrastPass);
-
-    // Gamma correction
-    const gammaPass = new ShaderPass(GammaCorrectionShader);
-    composer.current.addPass(gammaPass);
-
-
-
-    // LOADER
-    const loader = new GLTFLoader();
-    loader.load(
-    `https://coral-military-marten-346.mypinata.cloud/ipfs/${AssetsData?.mutable_data?.model}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`, // Replace 'your-model.glb' with the path to your GLTF model file
-    (gltf) => {
-        gltf.scene.position.set(0, 0, 0); // Set the position of the model
-        scene.current.add(gltf.scene);
-        // Set camera position and zoom level
-        const boundingBox = new THREE.Box3().setFromObject(gltf.scene);
-        const center = new THREE.Vector3();
-        boundingBox.getCenter(center);
-        const size = boundingBox.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.current.fov * (Math.PI / 10);
-        let cameraZ = Math.abs((maxDim / 1.9) * Math.tan(fov * 1.9));
-        cameraZ *= 1.8; // Multiply by a factor to adjust the zoom level
-        camera.current.position.z = cameraZ;
-
-        // Change cursor icon to pointer when clicking on the model
-        containerRef.current.addEventListener('mousedown', () => {
-            containerRef.current.style.cursor = 'grabbing';
+  
+    const mixerRef = useRef(); // Ref to the AnimationMixer
+  
+    useEffect(() => {
+      // Create an AnimationMixer when the component mounts
+      if (animations.length) {
+        mixerRef.current = new THREE.AnimationMixer(scene);
+  
+        // Play all animations in the GLTF model
+        animations.forEach((clip) => {
+          const action = mixerRef.current.clipAction(clip);
+          action.play(); // Start the animation
         });
-
-        // Change cursor icon to pointer when clicking on the model
-        containerRef.current.addEventListener('mouseup', () => {
-        containerRef.current.style.cursor = 'grab';
-        });
-
-        // Start animation loop after the model is loaded
-        animate();
-    },
-    undefined,
-    (error) => {
-        console.error('Error loading GLTF model:', error);
-    }
-    );
-
-
-    // Enable shadow mapping
-    renderer.current.shadowMap.enabled = true;
-    renderer.current.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    // Animation loop
-    const animate = () => {
-    requestAnimationFrame(animate);
-    controls.current.update();
-    renderer.current.render(scene.current, camera.current);
-
-    };
-    animate();
-
+      }
+  
       return () => {
-        renderer.current.dispose();
+        // Clean up the mixer when the component unmounts
+        if (mixerRef.current) {
+          mixerRef.current.stopAllAction();
+          mixerRef.current = null;
+        }
       };
-    
-  }, []);
-
+    }, [animations, scene]);
+  
+    // Update the mixer on each frame
+    useFrame((_, delta) => {
+      if (mixerRef.current) {
+        mixerRef.current.update(delta);
+      }
+    });
+  
+    return (
+      <Center>
+        <primitive
+          ref={modelRef4}
+          object={scene}
+          scale={scale}
+          castShadow // Enable shadow casting for the model
+        />
+      </Center>
+    );
+  };
 
   // TEMPLATE/OWNER CHECK
   
@@ -878,9 +764,52 @@ export default function ProfilePage (params: { username: string }) {
                 <Image width={200} height={200} src={`${process.env.NEXT_PUBLIC_IPFS_ENDPOINT!}/${template.immutable_data.image}`} alt="" />
               </div>
 
-              <div ref={containerRef} className='model_styling_block_dd' style={{display: Show3DModal ? 'block' : 'none'}}>
-                <div></div>
-              </div>
+              {AssetsData?.mutable_data?.model ? (<div className='model_styling_block_dd' style={{display: Show3DModal ? 'block' : 'none'}}>
+              <Canvas
+                shadows // Enable shadow rendering
+                camera={{ position: [0, 0.4, 7], fov: 28 }}
+                style={{ width: '111px', height: '111px', borderRadius: '50%', position: 'absolute', marginTop: 15, marginLeft: 40, pointerEvents: 'none' }} // Set the canvas size here
+              >
+                {/* Lighting */}
+                <ambientLight intensity={1.5} />
+
+                <pointLight
+                  position={[-1.1, 1.0, 3.9]} // Place the light above the model
+                  intensity={3.6}
+                  distance={10} // Set the distance for shadows to soften
+                  decay={0.1} // Add decay for a more natural effect
+                  castShadow // Enable shadow casting
+                  shadow-mapSize={[500, 500]} // Resolution of the shadow map
+                  shadow-bias={-0.005} // Control the bias to avoid shadow artifacts
+                  shadow-radius={20} // Adjust shadow softness
+                  shadow-color="black" // Set shadow color (usually black, but can be adjusted)
+                  color="white"
+                />
+
+                {/* Flat Plane */}
+                <mesh
+                  position={[0, 0, -1.1]} // Lower the plane slightly
+                  rotation={[-Math.PI / 90, 0, 0]} // Keep the plane flat
+                  receiveShadow // Enable shadow reception for the plane
+                >
+                  <planeGeometry args={[8, 8]} />
+                  <meshStandardMaterial 
+                  color="white" 
+                  emissive="white" // Make the plane glow
+                  emissiveIntensity={0.1} // Adjust brightness of emissive color (higher = brighter)
+                  />
+                </mesh>
+
+                {/* Rotating Model */}
+                <RotatingModel url="https://api.iplayer.network/media/models/globe4.gltf"
+                  scale={1.5}
+                />
+
+                {/* Orbit Controls */}
+                <OrbitControls />
+              </Canvas>
+              </div>): (<div className='model_styling_block_dd' style={{display: Show3DModal ? 'block' : 'none'}}>
+              </div>)}
 
               <div className="project_tasks_project_info">
 
