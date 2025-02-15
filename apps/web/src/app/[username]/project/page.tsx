@@ -33,7 +33,6 @@ export default function ProfilePage (params: { params: { username: string } }) {
 
   const [TemplatesData, setTemplates] = useState<ITemplate[]>([]);
   const [AssetsData, setAssetsData] = useState<IAsset[]>([]);
-
   const [filteredTemplatesData, setFilteredTemplatesData] = useState<ITemplate | undefined>(undefined);
 
   const [Show3DModal, setShow3DModal] = useState(false);
@@ -115,8 +114,13 @@ export default function ProfilePage (params: { params: { username: string } }) {
       try {
         const templates = await explorer.getTemplates();
         
-        const TemplateCheck = templates.find(template => template.template_id === params.params.username) || null;
-        setFilteredTemplatesData(TemplateCheck);
+        const TemplateCheck = templates.find(template => template.template_id === params.params.username);
+        if (TemplateCheck !== undefined) {
+          setFilteredTemplatesData(TemplateCheck);
+        } else {
+          setFilteredTemplatesData(undefined);
+        }
+
         setTemplates(templates);
 
       } catch (error) {
