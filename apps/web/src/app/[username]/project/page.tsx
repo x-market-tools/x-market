@@ -32,7 +32,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const {session} = apiCoreUseStoreState(state=>state.auth.data);
 
   const [TemplatesData, setTemplates] = useState<ITemplate[]>([]);
-  const [AssetsData, setAssetsData] = useState<IAsset[]>([]);
+  const [AssetsData, setAssetsData] = useState<IAsset | undefined>(undefined);
   const [filteredTemplatesData, setFilteredTemplatesData] = useState<ITemplate | undefined>(undefined);
 
   const [Show3DModal, setShow3DModal] = useState(false);
