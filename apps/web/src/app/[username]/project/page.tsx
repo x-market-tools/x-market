@@ -9,19 +9,23 @@ import { CreatorFlow } from '@/components/CreatorFlow/CreatorFlow';
 import React, { useMemo, Component, useState, useCallback, useEffect, useRef } from 'react';
 import { apiCoreUseStoreActions, apiCoreUseStoreState } from '@/store/hooks';
 import { createClient } from '@supabase/supabase-js';
-import fetch from 'node-fetch';
 
 // THREE
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
 
-const explorer = new ExplorerApi(
-  process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!,
-  'atomicassets',
-  { fetch }
-);
+type FetchFix = (input?: Request | string, init?: RequestInit) => Promise<Response>;
+const explorer = new ExplorerApi(`${process.env.NEXT_PUBLIC_ATOMIC_ENDPOINT!}`, 'atomicassets',{fetch:fetch as any});
+export async function getData(userName:string) {
 
+  try {
+    return explorer.getTemplates({authorized_account:userName})
+  } catch (error) {
+    
+  }
+
+}
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
