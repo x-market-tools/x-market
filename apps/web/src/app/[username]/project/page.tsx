@@ -343,7 +343,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
 
   async function UpdateMutableData() {
 
-    await session.transact(
+    await session?.transact(
         {
             // Create Template
             actions: [
@@ -353,7 +353,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
                     data: {
                         authorized_editor: `${session?.auth.actor.toString()}`,
                         asset_owner: `${session?.auth.actor.toString()}`,
-                        asset_id: `${AssetsData.asset_id}`,
+                        asset_id: `${AssetsData?.asset_id}`,
                         new_mutable_data: NFT_MUTABLE_DATA
                     },
                     authorization: [{ actor: `${session?.auth.actor.toString()}`, permission: `${session?.auth.permission.toString()}` }],
