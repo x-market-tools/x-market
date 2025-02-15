@@ -690,7 +690,7 @@ export default function CreationWay () {
 
                     {CollectionName ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
-                            <div className='buttonStart'>
+                            <div className='buttonStart' onClick={() => HandleCreationWay()}>
                                 <div className='text' >Next</div>
                             </div>
                         </div>
@@ -761,7 +761,7 @@ export default function CreationWay () {
                     {CollectionCoverPicture || CollectionName ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
-                                <div className='text'>Next</div>
+                                <div className='text' onClick={() => CollectionReadyStatus === true ? HandleNoCreationCollection() : HandleCreationCollection()}>Next</div>
                             </div>
                         </div>
                     ) : (
@@ -992,7 +992,7 @@ export default function CreationWay () {
                 {ProjectType || ProjectForm  || FirstCategory ? (
                     <div className='beTheFirst' style={{opacity: 0.2}}>
                         <div className='buttonStart'>
-                            <div className='text'>Next</div>
+                            <div className='text' onClick={() => HandleNewProject()}>Next</div>
                         </div>
                     </div>
                 ) : (
@@ -1065,7 +1065,7 @@ export default function CreationWay () {
                     {ProjectCoverPicture  || ProjectSubtitle  || ProjectTitle  ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
-                                <div className='text'>Next</div>
+                                <div className='text' onClick={() => HandleDescribe()}>Next</div>
                             </div>
                         </div>
                     ) : (
@@ -1104,7 +1104,7 @@ export default function CreationWay () {
                     {ProjectConcept === null || ProjectDiscribe === null ? (
                         <div className='beTheFirst' style={{opacity: 0.2}}>
                             <div className='buttonStart'>
-                                <div className='text'>Next</div>
+                                <div className='text' onClick={() => HandleConcept()}>Next</div>
                             </div>
                         </div>
                     ) : (
@@ -1159,7 +1159,7 @@ export default function CreationWay () {
                     
                     {TamplateID === null ? (
                         <div className='beTheFirst' style={{opacity: 0.5}}>
-                            <div className='buttonStart'>
+                            <div className='buttonStart' onClick={() => HandleConcept()}>
                                 <div className='text'>
                                     Loading
                                         <div className="arrows">
