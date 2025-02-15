@@ -542,7 +542,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
     }
     setloadingSupa(false);
   };
-  
+
   useEffect(() => {
     fetchData();
 
@@ -555,7 +555,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
 
 
   // REWARD
-  const [ProductData, setProductData] = useState([]);
+  const [ProductData, setProductData] = useState<Product[]>([]);
   const [loadingProductData, setloadingProductData] = useState(true);
   const [ShowCreateProduct, setShowCreateProduct] = useState(false);
   const [messageReward, setmessageReward] = useState('');
@@ -565,18 +565,29 @@ export default function ProfilePage (params: { params: { username: string } }) {
   };
 
   // Fetch data from Supabase table
-  const fetchProductData = async () => {
-    const { data, error } = await supabase
-      .from('Products')  // Replace with your table name
-      .select('*');  // Select all columns
-
-    if (error) {
-      console.log('Error fetching data:', error);
-    } else {
-      setProductData(data);  // Store fetched data in state
-    }
-    setloadingProductData(false);
+  // Define the expected shape of a Product
+  type Product = {
+      id: number;
+      productTitle: string;
+      productPrice: number;
+      projectID: string;
+      projectOwner: string;
+      created_at?: string; // Optional field
   };
+
+  const fetchProductData = async () => {
+      const { data, error } = await supabase
+        .from('Products')  // Replace with your table name
+        .select('*');  // Select all columns
+
+      if (error) {
+        console.log('Error fetching data:', error);
+      } else {
+        setProductData(data as Product[]); // ✅ Cast `data` to the Product[] type
+      }
+      setloadingProductData(false);
+  };
+
 
   useEffect(() => {
     fetchProductData();
@@ -633,10 +644,10 @@ export default function ProfilePage (params: { params: { username: string } }) {
   };
   
 
-  const [selectedProduct, setSelectedProduct] = useState(null);  // State for selected product
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);  // State for selected product
   const [isModalOpen, setIsModalOpen] = useState(false);         // State for modal visibility
 
-  const handleOpenModal = (product) => {
+  const handleOpenModal = (product: Product) => {
     setSelectedProduct(product);    // Set the clicked product data
     setIsModalOpen(true);           // Open the modal
   };
