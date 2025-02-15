@@ -135,7 +135,9 @@ export default function ProfilePage (params: { params: { username: string } }) {
 
         const FilteredAssetData = await explorer.getAssets();
 
-        const AssetCheck = FilteredAssetData.find(assets => assets.template.template_id === params.params.username);
+        const AssetCheck = FilteredAssetData.find(
+          (assets) => assets.template && assets.template.template_id === params.params.username
+        );
         setAssetsData(AssetCheck);
         setprojectID(AssetCheck.template.template_id.toString())
 
