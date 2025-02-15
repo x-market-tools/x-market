@@ -25,7 +25,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 
-export default async function ProfilePage (params: { params: { username: string } }) {
+export default function ProfilePage (params: { params: { username: string } }) {
 
   const {connect} = apiCoreUseStoreActions(state=>state.auth);
   const {session} = apiCoreUseStoreState(state=>state.auth.data);
