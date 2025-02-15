@@ -513,7 +513,15 @@ export default function ProfilePage (params: { params: { username: string } }) {
     }
   };
 
-  const [tasks, setTasks] = useState([]);
+  // Define the expected shape of a Task
+  type Task = {
+    id: number;
+    title: string;
+    description?: string; // Optional field
+    created_at: string;
+  };
+
+  const [tasks, setTasks] = useState<Task[]>([]); // Explicitly define type as Task[]
   const [loadingSupa, setloadingSupa] = useState(true);
   const [ShowCreateTask, setShowCreateTask] = useState(false);
 
@@ -526,15 +534,15 @@ export default function ProfilePage (params: { params: { username: string } }) {
     const { data, error } = await supabase
       .from('Tasks')  // Replace with your table name
       .select('*');  // Select all columns
-
+  
     if (error) {
       console.log('Error fetching data:', error);
     } else {
-      setTasks(data);  // Store fetched data in state
+      setTasks(data as Task[]);  // ✅ Ensure TypeScript understands `data` is Task[]
     }
     setloadingSupa(false);
   };
-
+  
   useEffect(() => {
     fetchData();
 
@@ -583,41 +591,47 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const [productTitle, setproductTitle] = useState("");
   const [productPrice, setproductPrice] = useState("");
 
-  const handleProductSubmit = async (e) => {
+  const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Insert data into the 'posts' table
+  
+    // Insert data into the 'Products' table in Supabase
     const { data, error } = await supabase
-      .from('Products')  // Replace with your table name
+      .from('Products') // Replace with your actual table name
       .insert([{ productTitle, productPrice, projectID, projectOwner }]);
-
+  
     if (error) {
       setmessageReward(`Error: ${error.message}`);
     } else {
       setmessageReward('Reward added successfully!');
       setproductTitle('');
       setproductPrice('');
-      setprojectID([]);
+      setprojectID([]); // Reset project ID
     }
   };
+  
 
-  const handleBuyProduct = async (e, productTitle, productPrice) => {
+  const handleBuyProduct = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    productTitle: string,
+    productPrice: number
+  ) => {
     e.preventDefault();
-
-    // Insert data into the 'posts' table
+  
+    // Insert data into the 'PurchasedProducts' table in Supabase
     const { data, error } = await supabase
-      .from('PurchasedProducts')  // Replace with your table name
+      .from('PurchasedProducts')
       .insert([{ purProductTitle: productTitle, purProductPrice: productPrice, projectID, projectOwner }]);
-
+  
     if (error) {
       setmessageReward(`Error: ${error.message}`);
     } else {
-      setmessageReward('Post added successfully!');
+      setmessageReward('Product purchased successfully!');
       setproductTitle('');
       setproductPrice('');
-      setprojectID([]);
+      setprojectID([]); // Reset project ID
     }
   };
+  
 
   const [selectedProduct, setSelectedProduct] = useState(null);  // State for selected product
   const [isModalOpen, setIsModalOpen] = useState(false);         // State for modal visibility
