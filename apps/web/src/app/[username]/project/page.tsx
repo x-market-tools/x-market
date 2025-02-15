@@ -177,7 +177,7 @@ export default function ProfilePage (params: { params: { username: string } }) {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [saveEdits, setsaveEdits] = useState(false);
   const [cid5, setCid5] = useState();
-  const [editorInstance, setEditorInstance] = useState(null);
+  const [editorInstance, setEditorInstance] = useState<EditorJS | null>(null);
   const [contentData, setContentData] = useState('');
 
   const pinataJWTKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIyZjE3MzQ2Mi1jNWVmLTRjM2YtYTE3ZC03YTNmZDg5Zjk4Y2MiLCJlbWFpbCI6ImNvbnN0YW50aW4ucmF1dGVyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImlkIjoiRlJBMSIsImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxfV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiJmMzZjMGFhZTAzYzU0NzdmZTgxZCIsInNjb3BlZEtleVNlY3JldCI6IjYwM2I1MzhjZTU3MTZlMTAzZWU3YzIwMjVkZGE1NTMxNjE1ZmUxODZlMmUwZTkxYzRhMzkxMWUyOTEyMjVhOWQiLCJpYXQiOjE2OTg0MDI1NzJ9.DNJItYEPAZV4p3oGX-nuAeHcgAgi2zEOMYHRi9O2bOY";
@@ -224,124 +224,83 @@ export default function ProfilePage (params: { params: { username: string } }) {
   
   // Initialize Editor.js instance
   const initializeEditor = async () => {
-              setLoading(true);
-              setDataLoaded(true);
-              try {
-              const { default: EditorJs } = await import('@editorjs/editorjs');
+    setLoading(true);
+    setDataLoaded(true);
+    try {
+      const { default: EditorJs } = await import("@editorjs/editorjs");
   
-              const editor = new EditorJs({
-                holder: 'editorjs',
-                tools: {
-                  header: { class: require('@editorjs/header'), inlineToolbar: true },
-                  list: { class: require('@editorjs/nested-list'), inlineToolbar: true },
-                  // FIXME: some fix need
-                  image: {
-                      class: require('@editorjs/image'),
-                      inlineToolbar: true,
-                      config: {
-                          buttonContent: '<img src={`https://coral-military-marten-346.mypinata.cloud/ipfs/${cid5}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`} alt="_"/>',
-                          uploader: {
-                            uploadByFile(file: File) {
-                              return new Promise(async (resolve, reject) => {
-                                try {
-                                  console.log('Starting file upload...');
-                                  
-                                  const formData = new FormData();
-                                  formData.append("file", file, file.name);
-                            
-                                  const metadata = JSON.stringify({ name: file.name });
-                                  formData.append("pinataMetadata", metadata);
-                            
-                                  const options = JSON.stringify({ cidVersion: 0 });
-                                  formData.append("pinataOptions", options);
-                            
-                                  // ✅ Fix: Convert iterator to an array
-                                  Array.from(formData.entries()).forEach(([key, value]) => {
-                                    console.log(`${key}: ${value}`);
-                                  });
-                            
-                                  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-                                    method: "POST",
-                                    headers: {
-                                      Authorization: `Bearer ${pinataJWTKey}`,
-                                    },
-                                    body: formData,
-                                  });
-                            
-                                  if (!res.ok) throw new Error(`File upload failed with status: ${res.status}`);
-                            
-                                  const ipfsHash = await res.json();
-                                  console.log('File upload successful. IPFS Hash:', ipfsHash);
-                            
-                                  const WE = ipfsHash.IpfsHash;
-                            
-                                  resolve({
-                                    success: 1,
-                                    file: {
-                                      url: `https://coral-military-marten-346.mypinata.cloud/ipfs/${WE}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`
-                                    }
-                                  });
-                            
-                                  setCid5(WE);
-                                } catch (error) {
-                                  console.error('File upload error:', error);
-                                  reject('Upload failed');
-                                }
-                              });
-                            },
-                                            
-                          },
-                      },
-                  },
-                  quote: {
-                    class: require('@editorjs/quote'),
-                    inlineToolbar: true,
-                    shortcut: "CMD+SHIFT+O",
-                    config: {
-                      quotePlaceholder: "Enter a quote",
-                      captionPlaceholder: "Quote's author",
-                    },
-                  },
-                  table: {
-                    class: require('@editorjs/table'),
-                    inlineToolbar: true,
-                    config: {
-                      rows: 2,
-                      cols: 3,
-                    },
-                  },
-                  inlineCode: {
-                    class: require('@editorjs/inline-code'),
-                    shortcut: "CMD+SHIFT+M",
-                  },
-                  code: {
-                    class: require('@editorjs/code'),
-                    shortcut: "CMD+SHIFT+M",
-                  },
-                  attaches: {
-                    class: require('@editorjs/attaches'),
-                    inlineToolbar: true,
-                    config: {
-                      // FIXME: fix the path
-                      endpoint: "/api/uploadImage",
-                    },
-                  },
-                  delimiter: require('@editorjs/code'),
+      const editor = new EditorJs({
+        holder: "editorjs",
+        tools: {
+          header: { class: require("@editorjs/header"), inlineToolbar: true },
+          list: { class: require("@editorjs/nested-list"), inlineToolbar: true },
+          image: {
+            class: require("@editorjs/image"),
+            inlineToolbar: true,
+            config: {
+              buttonContent: `<img src="https://coral-military-marten-346.mypinata.cloud/ipfs/${cid5}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK" alt="_"/>`,
+              uploader: {
+                uploadByFile(file: File) {
+                  return new Promise(async (resolve, reject) => {
+                    try {
+                      console.log("Starting file upload...");
+  
+                      const formData = new FormData();
+                      formData.append("file", file, file.name);
+  
+                      const metadata = JSON.stringify({ name: file.name });
+                      formData.append("pinataMetadata", metadata);
+  
+                      const options = JSON.stringify({ cidVersion: 0 });
+                      formData.append("pinataOptions", options);
+  
+                      // ✅ Fix: Convert iterator to an array
+                      Array.from(formData.entries()).forEach(([key, value]) => {
+                        console.log(`${key}: ${value}`);
+                      });
+  
+                      const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+                        method: "POST",
+                        headers: {
+                          Authorization: `Bearer ${pinataJWTKey}`,
+                        },
+                        body: formData,
+                      });
+  
+                      if (!res.ok) throw new Error(`File upload failed with status: ${res.status}`);
+  
+                      const ipfsHash = await res.json();
+                      console.log("File upload successful. IPFS Hash:", ipfsHash);
+  
+                      const WE = ipfsHash.IpfsHash;
+  
+                      resolve({
+                        success: 1,
+                        file: {
+                          url: `https://coral-military-marten-346.mypinata.cloud/ipfs/${WE}?pinataGatewayToken=t7XY-6qSHcuYCDI3H64lRv-6nLBi6sdab5pnnTCaXyQ9U1fF4tta37ZMXPR7xlYK`,
+                        },
+                      });
+  
+                      setCid5(WE);
+                    } catch (error) {
+                      console.error("File upload error:", error);
+                      reject("Upload failed");
+                    }
+                  });
                 },
-                onChange: () => {
-                  // Handle changes here if needed
-                },
-              });
+              },
+            },
+          },
+        },
+      });
   
-              setEditorInstance(editor);
-              setInitialized(true);
-  
-              } catch (error) {
-                  console.error('Error initializing editor:', error);
-              } finally {
-                setLoading(false);
-              }
-  
+      setEditorInstance(editor); // ✅ FIXED: No more Type Error
+      setInitialized(true);
+    } catch (error) {
+      console.error("Error initializing editor:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Save content function
