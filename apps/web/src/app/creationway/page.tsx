@@ -1176,15 +1176,15 @@ export default function CreationWay () {
                                 <div className='text' onClick={() => HandleMint()}>                                
                                     <div className='text' >
                                         <div className="arrows">
-                                            <span className="arrow">></span>
-                                            <span className="arrow">></span>
-                                            <span className="arrow">></span>
+                                            <span className="arrow">.</span>
+                                            <span className="arrow">.</span>
+                                            <span className="arrow">.</span>
                                         </div>
                                         <span style={{marginLeft: 10, marginRight: 10}}>Mint</span>
                                         <div className="arrows">
-                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>></span>
-                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>></span>
-                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>></span>
+                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>.</span>
+                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>.</span>
+                                            <span className="arrow" style={{transform: "scaleX(-1)"}}>.</span>
                                         </div>
                                     </div>
                                 </div>
